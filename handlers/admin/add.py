@@ -242,8 +242,8 @@ async def process_confirm(message: Message, state: FSMContext):
         idx = md5(' '.join([title, body, price, tag]
                            ).encode('utf-8')).hexdigest()
 
-        db.query('INSERT INTO products VALUES (?, ?, ?, ?, ?, ?)',
-                 (idx, title, body, image, int(price), tag))
+        db.query('INSERT INTO products (idx, title, body, photo, price, tag, rating_avg) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                 (idx, title, body, image, int(price), tag, 0))
 
     await state.finish()
     await message.answer('Готово!', reply_markup=ReplyKeyboardRemove())
@@ -266,7 +266,8 @@ async def show_products(m, products, category_idx):
 
     await bot.send_chat_action(m.chat.id, ChatActions.TYPING)
 
-    for idx, title, body, image, price, tag in products:
+    for product in products:
+        idx, title, body, image, price, tag = product[0], product[1], product[2], product[3], product[4], product[5]
 
         text = f'<b>{title}</b>\n\n{body}\n\nЦена: {price} рублей.'
 

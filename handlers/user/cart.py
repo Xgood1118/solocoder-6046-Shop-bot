@@ -1,4 +1,5 @@
 import logging
+import time
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 from keyboards.inline.products_from_cart import product_markup, product_cb
@@ -8,6 +9,7 @@ from aiogram.types.chat import ChatActions
 from states import CheckoutState
 from loader import dp, db, bot
 from filters import IsUser
+from utils.db.storage import ORDER_STATUS_PENDING
 from .menu import cart
 
 
@@ -38,7 +40,8 @@ async def process_cart(message: Message, state: FSMContext):
                 db.query('DELETE FROM cart WHERE idx=?', (idx,))
 
             else:
-                _, title, body, image, price, _ = product
+                product_tuple = product
+                _, title, body, image, price, _ = product_tuple[0], product_tuple[1], product_tuple[2], product_tuple[3], product_tuple[4], product_tuple[5]
                 order_cost += price
 
                 async with state.proxy() as data:
@@ -232,8 +235,9 @@ async def process_confirm(message: Message, state: FSMContext):
                         for idx, quantity in db.fetchall('''SELECT idx, quantity FROM cart
             WHERE cid=?''', (cid,))]  # idx=quantity
 
-            db.query('INSERT INTO orders VALUES (?, ?, ?, ?)',
-                     (cid, data['name'], data['address'], ' '.join(products)))
+            created_at = int(time.time())
+            db.query('INSERT INTO orders VALUES (?, ?, ?, ?, ?, ?)',
+                     (cid, data['name'], data['address'], ' '.join(products), ORDER_STATUS_PENDING, created_at))
 
             db.query('DELETE FROM cart WHERE cid=?', (cid,))
 

@@ -4,6 +4,8 @@ from loader import dp
 from filters import IsAdmin, IsUser
 
 catalog = '🛍️ Каталог'
+search = '🔍 Поиск товаров'
+favorites = '⭐ Избранное'
 balance = '💰 Баланс'
 cart = '🛒 Корзина'
 delivery_status = '🚚 Статус заказа'
@@ -24,6 +26,7 @@ async def admin_menu(message: Message):
 async def user_menu(message: Message):
     markup = ReplyKeyboardMarkup(selective=True)
     markup.add(catalog)
+    markup.add(search, favorites)
     markup.add(balance, cart)
     markup.add(delivery_status)
 
